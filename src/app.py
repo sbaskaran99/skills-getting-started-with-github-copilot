@@ -1,3 +1,88 @@
+
+
+from fastapi import FastAPI, HTTPException
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import RedirectResponse
+import os
+from pathlib import Path
+
+app = FastAPI(title="Mergington High School API",
+              description="API for viewing and signing up for extracurricular activities")
+
+# Mount the static files directory
+current_dir = Path(__file__).parent
+app.mount("/static", StaticFiles(directory=os.path.join(Path(__file__).parent,
+          "static")), name="static")
+
+# In-memory activity database
+# Activity categories: Sports, Arts, Intellectual
+activities = {
+    "Chess Club": {
+        "description": "Learn strategies and compete in chess tournaments",
+        "schedule": "Fridays, 3:30 PM - 5:00 PM",
+        "max_participants": 12,
+        "participants": ["michael@mergington.edu", "daniel@mergington.edu"]
+    },
+    "Programming Class": {
+        "description": "Learn programming fundamentals and build software projects",
+        "schedule": "Tuesdays and Thursdays, 3:30 PM - 4:30 PM",
+        "max_participants": 20,
+        "participants": ["emma@mergington.edu", "sophia@mergington.edu"]
+    },
+    "Gym Class": {
+        "description": "Physical education and sports activities",
+        "schedule": "Mondays, Wednesdays, Fridays, 2:00 PM - 3:00 PM",
+        "max_participants": 30,
+        "participants": ["john@mergington.edu", "olivia@mergington.edu"]
+    },
+    "Soccer Team": {
+        "description": "Competitive soccer training and matches",
+        "schedule": "Mondays and Wednesdays, 4:00 PM - 5:30 PM",
+        "max_participants": 15,
+        "participants": ["james@mergington.edu"]
+    },
+    "Tennis Club": {
+        "description": "Tennis lessons and tournaments for all skill levels",
+        "schedule": "Saturdays, 10:00 AM - 11:30 AM",
+        "max_participants": 12,
+        "participants": ["alex@mergington.edu", "rachel@mergington.edu"]
+    },
+    "Art Club": {
+        "description": "Painting, drawing, and other visual arts",
+        "schedule": "Thursdays, 3:30 PM - 5:00 PM",
+        "max_participants": 16,
+        "participants": ["grace@mergington.edu"]
+    },
+    "Drama Club": {
+        "description": "Theater productions and acting workshops",
+        "schedule": "Tuesdays and Thursdays, 4:30 PM - 6:00 PM",
+        "max_participants": 20,
+        "participants": ["isabella@mergington.edu", "lucas@mergington.edu"]
+    },
+    "Debate Team": {
+        "description": "Develop argumentation and public speaking skills",
+        "schedule": "Mondays and Wednesdays, 3:30 PM - 4:30 PM",
+        "max_participants": 14,
+        "participants": ["noah@mergington.edu"]
+    },
+    "Science Club": {
+        "description": "Explore physics, chemistry, and biology through experiments",
+        "schedule": "Fridays, 3:00 PM - 4:30 PM",
+        "max_participants": 18,
+        "participants": ["ava@mergington.edu", "ethan@mergington.edu"]
+    }
+}
+
+@app.delete("/activities/{activity_name}/unregister")
+def unregister_from_activity(activity_name: str, email: str):
+    """Remove a student from an activity"""
+    if activity_name not in activities:
+        raise HTTPException(status_code=404, detail="Activity not found")
+    activity = activities[activity_name]
+    if email not in activity["participants"]:
+        raise HTTPException(status_code=404, detail="Participant not found")
+    activity["participants"].remove(email)
+    return {"message": f"Unregistered {email} from {activity_name}"}
 """
 High School Management System API
 
